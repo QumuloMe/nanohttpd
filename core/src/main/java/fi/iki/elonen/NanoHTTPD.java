@@ -753,9 +753,11 @@ public abstract class NanoHTTPD {
         }
 
         /**
-         * Decodes parameters in percent-encoded URI-format ( e.g.
-         * "name=Jack%20Daniels&pass=Single%20Malt" ) and adds them to given
-         * Map. NOTE: this doesn't support multiple identical keys due to the
+         * Decodes parameters in percent-encoded URI-format, like
+         * "name=Jack%20Daniels&pass=Single%20Malt", and adds them to the given
+         * Map.
+         *
+         * NOTE: this doesn't support multiple identical keys due to the
          * simplicity of Map.
          */
         private void decodeParms(String parms, Map<String, String> p) {
@@ -1013,8 +1015,8 @@ public abstract class NanoHTTPD {
         }
 
         /**
-         * Deduce body length in bytes. Either from "content-length" header or
-         * read bytes.
+         * Deduce body length in bytes. This value comes either from the
+         * "Content-Length" header or how many bytes were read.
          */
         public long getBodySize() {
             if (this.headers.containsKey("content-length")) {
@@ -1106,7 +1108,9 @@ public abstract class NanoHTTPD {
 
         /**
          * Retrieves the content of a sent file and saves it to a temporary
-         * file. The full path to the saved file is returned.
+         * file.
+         *
+         * @return the full path to the saved file.
          */
         private String saveTmpFile(ByteBuffer b, int offset, int len, String filename_hint) {
             String path = "";
@@ -1333,14 +1337,14 @@ public abstract class NanoHTTPD {
         private String mimeType;
 
         /**
-         * Data of the response, may be null.
+         * Data of the response. May be null.
          */
         private InputStream data;
 
         private long contentLength;
 
         /**
-         * Headers for the HTTP response. Use addHeader() to add lines. the
+         * Headers for the HTTP response. Use addHeader() to add lines. The
          * lowercase map is automatically kept up to date.
          */
         @SuppressWarnings("serial")
@@ -1353,7 +1357,7 @@ public abstract class NanoHTTPD {
         };
 
         /**
-         * copy of the header map with all the keys lowercase for faster
+         * Copy of the header map with all the keys lowercase for faster
          * searching.
          */
         private final Map<String, String> lowerCaseHeader = new HashMap<String, String>();
@@ -1364,16 +1368,23 @@ public abstract class NanoHTTPD {
         private Method requestMethod;
 
         /**
-         * Use chunkedTransfer
+         * Whether to use chunkedTransfer or not
          */
         private boolean chunkedTransfer;
 
+        /**
+         * Whether to encode the response as GZip or not.
+         */
         private boolean encodeAsGzip;
 
+        /**
+         * Whether to use the HTTP/1.1 connection keep-alive feature or not.
+         */
         private boolean keepAlive;
 
         /**
-         * Creates a fixed length response if totalBytes>=0, otherwise chunked.
+         * Creates a fixed length response if totalBytes is greater than 0,
+         * or a chunked response otherwise.
          */
         protected Response(IStatus status, String mimeType, InputStream data, long totalBytes) {
             this.status = status;
@@ -1708,28 +1719,28 @@ public abstract class NanoHTTPD {
     public static final int SOCKET_READ_TIMEOUT = 5000;
 
     /**
-     * Common MIME type for dynamic content: plain text
+     * Common MIME type for plain text.
      */
     public static final String MIME_PLAINTEXT = "text/plain";
 
     /**
-     * Common MIME type for dynamic content: html
+     * Common MIME type for HTML.
      */
     public static final String MIME_HTML = "text/html";
 
     /**
-     * Pseudo-Parameter to use to store the actual query string in the
+     * Pseudo-parameter to use to store the actual query string in the
      * parameters map for later re-processing.
      */
     private static final String QUERY_STRING_PARAMETER = "NanoHttpd.QUERY_STRING";
 
     /**
-     * logger to log to.
+     * Logger used for logging.
      */
     private static final Logger LOG = Logger.getLogger(NanoHTTPD.class.getName());
 
     /**
-     * Hashtable mapping (String)FILENAME_EXTENSION -> (String)MIME_TYPE
+     * Map from FILENAME_EXTENSION to MIME_TYPE.
      */
     protected static Map<String, String> MIME_TYPES;
 
@@ -1772,9 +1783,14 @@ public abstract class NanoHTTPD {
     };
 
     /**
-     * Creates an SSLSocketFactory for HTTPS. Pass a loaded KeyStore and an
-     * array of loaded KeyManagers. These objects must properly
-     * loaded/initialized by the caller.
+     * Creates an SSLSocketFactory for HTTPS based on a KeyStore and a set of
+     * KeyManager instances.
+     *
+     * @param loadedKeyStore
+     *          a loaded KeyStore instance
+     *
+     * @param keyManagers
+     *          array of loaded KeyManagers
      */
     public static SSLServerSocketFactory makeSSLSocketFactory(KeyStore loadedKeyStore, KeyManager[] keyManagers) throws IOException {
         SSLServerSocketFactory res = null;
@@ -1791,9 +1807,14 @@ public abstract class NanoHTTPD {
     }
 
     /**
-     * Creates an SSLSocketFactory for HTTPS. Pass a loaded KeyStore and a
-     * loaded KeyManagerFactory. These objects must properly loaded/initialized
-     * by the caller.
+     * Creates an SSLSocketFactory for HTTPS based on a KeyStore and a
+     * KeyManagerFactory instances.
+     *
+     * @param loadedKeyStore
+     *          a loaded KeyStore instance
+     *
+     * @param keyManagerFactory
+     *          a loaded KeyManagerFactory
      */
     public static SSLServerSocketFactory makeSSLSocketFactory(KeyStore loadedKeyStore, KeyManagerFactory loadedKeyFactory) throws IOException {
         try {
@@ -1804,8 +1825,13 @@ public abstract class NanoHTTPD {
     }
 
     /**
-     * Creates an SSLSocketFactory for HTTPS. Pass a KeyStore resource with your
-     * certificate and passphrase
+     * Creates an SSLSocketFactory for HTTPS.
+     *
+     * @param keyAndTrustStoreClasspathPath
+     *          the classpath to a key and trust store
+     *
+     * @param passphrase
+     *          the passphrase to unlock the key and trust store
      */
     public static SSLServerSocketFactory makeSSLSocketFactory(String keyAndTrustStoreClasspathPath, char[] passphrase) throws IOException {
         try {
@@ -1826,7 +1852,7 @@ public abstract class NanoHTTPD {
     }
 
     /**
-     * Get MIME type from file name extension, if possible
+     * Get MIME type from file name extension, if possible.
      *
      * @param uri
      *            the string representing a file
@@ -1886,14 +1912,6 @@ public abstract class NanoHTTPD {
         this(null, port);
     }
 
-    // -------------------------------------------------------------------------------
-    // //
-    //
-    // Threading Strategy.
-    //
-    // -------------------------------------------------------------------------------
-    // //
-
     /**
      * Constructs an HTTP server on given hostname and port.
      */
@@ -1912,7 +1930,7 @@ public abstract class NanoHTTPD {
     }
 
     /**
-     * create a instance of the client handler, subclasses can return a subclass
+     * Create a instance of the client handler, subclasses can return a subclass
      * of the ClientHandler.
      *
      * @param finalAccept
@@ -1951,9 +1969,6 @@ public abstract class NanoHTTPD {
     protected static Map<String, List<String>> decodeParameters(Map<String, String> parms) {
         return decodeParameters(parms.get(NanoHTTPD.QUERY_STRING_PARAMETER));
     }
-
-    // -------------------------------------------------------------------------------
-    // //
 
     /**
      * Decode parameters from a URL, handing the case where a single parameter
@@ -2005,7 +2020,7 @@ public abstract class NanoHTTPD {
 
     /**
      * @return true if the gzip compression should be used if the client
-     *         accespts it. Default this option is on for text content and off
+     *         accepts it. Default this option is on for text content and off
      *         for everything. Override this for custom semantics.
      */
     @SuppressWarnings("static-method")
@@ -2038,7 +2053,7 @@ public abstract class NanoHTTPD {
     }
 
     /**
-     * Call before start() to serve over HTTPS instead of HTTP
+     * Call before start() to serve over HTTPS instead of HTTP.
      */
     public void makeSecure(SSLServerSocketFactory sslServerSocketFactory, String[] sslProtocols) {
         this.serverSocketFactory = new SecureServerSocketFactory(sslServerSocketFactory, sslProtocols);
