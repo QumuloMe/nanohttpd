@@ -708,7 +708,7 @@ public abstract class NanoHTTPD {
                     }
                     int partHeaderLength = 0;
                     while (headerLines-- > 0) {
-                        partHeaderLength = scipOverNewLine(partHeaderBuff, partHeaderLength);
+                        partHeaderLength = skipOverNewLine(partHeaderBuff, partHeaderLength);
                     }
                     // Read the part data
                     if (partHeaderLength >= len - 4) {
@@ -745,7 +745,7 @@ public abstract class NanoHTTPD {
             }
         }
 
-        private int scipOverNewLine(byte[] partHeaderBuff, int index) {
+        private int skipOverNewLine(byte[] partHeaderBuff, int index) {
             while (partHeaderBuff[index] != '\n') {
                 index++;
             }
