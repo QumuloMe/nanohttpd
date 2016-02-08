@@ -150,6 +150,18 @@ import fi.iki.elonen.NanoHTTPD.Response.Status;
 public abstract class NanoHTTPD {
 
     /**
+     * Pluggable strategy for asynchronously executing requests.
+     */
+    public interface AsyncRunner {
+
+        void closeAll();
+
+        void closed(ClientHandler clientHandler);
+
+        void exec(ClientHandler code);
+    }
+
+    /**
      * Handles one session, i.e. parses the HTTP request and returns the
      * response.
      */
@@ -198,15 +210,52 @@ public abstract class NanoHTTPD {
     }
 
     /**
-     * Pluggable strategy for asynchronously executing requests.
+     * A temp file.
+     * <p/>
+     * <p>
+     * Temp files are responsible for managing the actual temporary storage and
+     * cleaning themselves up when no longer needed.
+     * </p>
      */
-    public interface AsyncRunner {
+    public interface TempFile {
 
-        void closeAll();
+        public void delete() throws Exception;
 
-        void closed(ClientHandler clientHandler);
+        public String getName();
 
-        void exec(ClientHandler code);
+        public OutputStream open() throws Exception;
+    }
+
+    /**
+     * Temp file manager.
+     * <p/>
+     * <p>
+     * Temp file managers are created 1-to-1 with incoming requests, to create
+     * and cleanup temporary files created as a result of handling the request.
+     * </p>
+     */
+    public interface TempFileManager {
+
+        void clear();
+
+        public TempFile createTempFile(String filename_hint) throws Exception;
+    }
+
+    /**
+     * Factory to create temp file managers.
+     */
+    public interface TempFileManagerFactory {
+
+        public TempFileManager create();
+    }
+
+    /**
+     * Factory to create ServerSocketFactories.
+     */
+    public interface ServerSocketFactory {
+
+        public ServerSocket create() throws IOException;
+
     }
 
     /**
@@ -1658,55 +1707,6 @@ public abstract class NanoHTTPD {
                 }
             } while (!NanoHTTPD.this.myServerSocket.isClosed());
         }
-    }
-
-    /**
-     * A temp file.
-     * <p/>
-     * <p>
-     * Temp files are responsible for managing the actual temporary storage and
-     * cleaning themselves up when no longer needed.
-     * </p>
-     */
-    public interface TempFile {
-
-        public void delete() throws Exception;
-
-        public String getName();
-
-        public OutputStream open() throws Exception;
-    }
-
-    /**
-     * Temp file manager.
-     * <p/>
-     * <p>
-     * Temp file managers are created 1-to-1 with incoming requests, to create
-     * and cleanup temporary files created as a result of handling the request.
-     * </p>
-     */
-    public interface TempFileManager {
-
-        void clear();
-
-        public TempFile createTempFile(String filename_hint) throws Exception;
-    }
-
-    /**
-     * Factory to create temp file managers.
-     */
-    public interface TempFileManagerFactory {
-
-        public TempFileManager create();
-    }
-
-    /**
-     * Factory to create ServerSocketFactories.
-     */
-    public interface ServerSocketFactory {
-
-        public ServerSocket create() throws IOException;
-
     }
 
     /**
