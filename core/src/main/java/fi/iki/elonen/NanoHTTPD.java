@@ -745,18 +745,35 @@ public abstract class NanoHTTPD {
         }
 
         /**
-         * Decodes the Multipart Body data and put it into Key/Value pairs. See:
-         * http://www.ietf.org/rfc/rfc2388.txt MIME messages look like this:
-         * Content-Type: multipart/mixed; boundary=frontier This is a message
-         * with multiple parts in MIME format. --frontier Content-Type:
-         * text/plain This is the body of the message. --frontier Content-Type:
-         * application/octet-stream Content-Transfer-Encoding: base64
-         * PGh0bWw+CiAgPGhlYWQ
-         * +CiAgPC9oZWFkPgogIDxib2R5PgogICAgPHA+VGhpcyBpcyB0aGUg
-         * Ym9keSBvZiB0aGUgbWVzc2FnZS48L3A+CiAgPC9ib2R5Pgo8L2h0bWw+Cg==
-         * --frontier-- This method is given the boundary and is responsible for
-         * populating the parameters (those sections of the form that don't have
-         * headers) and the files (those sections with content-types.)
+         * Decodes the Multipart Body data and put it into Key/Value pairs.
+         * <p/>
+         * <p>
+         * See: http://www.ietf.org/rfc/rfc2388.txt
+         * </p>
+         * <p/>
+         * <p>
+         * MIME messages look like this: <code>
+         * MIME-Version: 1.0
+         * Content-Type: multipart/mixed; boundary=frontier
+         * 
+         * This is a message with multiple parts in MIME format.
+         * --frontier
+         *  Content-Type: text/plain
+         * 
+         *  This is the body of the message.
+         *  --frontier
+         *  Content-Type: application/octet-stream
+         *  Content-Transfer-Encoding: base64
+         * 
+         *  PGh0bWw+CiAgPGhlYWQ+CiAgPC9oZWFkPgogIDxib2R5PgogICAgPHA+VGhpcyBpcyB0aGUg
+         *  Ym9keSBvZiB0aGUgbWVzc2FnZS48L3A+CiAgPC9ib2R5Pgo8L2h0bWw+Cg==
+         *  --frontier--
+         * </code>
+         * <p>
+         * This method is given the boundary and is responsible for populating
+         * the parameters (those sections of the form that don't have headers)
+         * and the files (those sections with content-types.)
+         * </p>
          */
         private void decodeMultipartFormData(String boundary, String encoding, ByteBuffer fbuf, Map<String, String> parms, Map<String, String> files) throws ResponseException {
             int pcount = 0;
