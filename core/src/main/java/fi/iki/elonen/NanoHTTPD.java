@@ -842,8 +842,7 @@ public abstract class NanoHTTPD {
         private void decodeMultipartFormData(ContentType contentType, ByteBuffer fbuf, Map<String, String> parms, Map<String, String> files) throws ResponseException {
             int pcount = 0;
             try {
-                byte[] boundaryBytes = contentType.getBoundary().getBytes();
-                int[] boundaryIdxs = getBoundaryPositions(fbuf, boundaryBytes);
+                int[] boundaryIdxs = getBoundaryPositions(fbuf, contentType);
                 if (boundaryIdxs.length < 2) {
                     throw new ResponseException(Response.Status.BAD_REQUEST, "BAD REQUEST: Content type is multipart/form-data "
                             + "but it contains less than two boundary strings.");
@@ -1119,7 +1118,8 @@ public abstract class NanoHTTPD {
          * a large block at a time and uses a temporary buffer to optimize
          * (memory mapped) file access.
          */
-        private int[] getBoundaryPositions(ByteBuffer b, byte[] boundary) {
+        private int[] getBoundaryPositions(ByteBuffer b, ContentType contentType) {
+            byte[] boundary = contentType.getBoundary().getBytes();
             int[] res = new int[0];
             if (b.remaining() < boundary.length) {
                 return res;
