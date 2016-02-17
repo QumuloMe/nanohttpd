@@ -842,9 +842,11 @@ public abstract class NanoHTTPD {
         private void decodeMultipartFormData(ContentType contentType, ByteBuffer fbuf, Map<String, String> parms, Map<String, String> files) throws ResponseException {
             int pcount = 0;
             try {
-                int[] boundaryIdxs = getBoundaryPositions(fbuf, contentType.getBoundary().getBytes());
+                byte[] boundaryBytes = contentType.getBoundary().getBytes();
+                int[] boundaryIdxs = getBoundaryPositions(fbuf, boundaryBytes);
                 if (boundaryIdxs.length < 2) {
-                    throw new ResponseException(Response.Status.BAD_REQUEST, "BAD REQUEST: Content type is multipart/form-data but contains less than two boundary strings.");
+                    throw new ResponseException(Response.Status.BAD_REQUEST, "BAD REQUEST: Content type is multipart/form-data "
+                            + "but it contains less than two boundary strings.");
                 }
 
                 byte[] partHeaderBuff = new byte[MAX_HEADER_SIZE];
