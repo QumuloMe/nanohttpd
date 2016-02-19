@@ -218,17 +218,15 @@ public abstract class NanoHTTPD {
      *            array of loaded KeyManagers
      */
     public static SSLServerSocketFactory makeSSLSocketFactory(KeyStore loadedKeyStore, KeyManager[] keyManagers) throws IOException {
-        SSLServerSocketFactory res = null;
         try {
             TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm());
             trustManagerFactory.init(loadedKeyStore);
             SSLContext ctx = SSLContext.getInstance("TLS");
             ctx.init(keyManagers, trustManagerFactory.getTrustManagers(), null);
-            res = ctx.getServerSocketFactory();
+            return ctx.getServerSocketFactory();
         } catch (Exception e) {
             throw new IOException(e.getMessage());
         }
-        return res;
     }
 
     /**
