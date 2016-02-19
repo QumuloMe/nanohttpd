@@ -190,7 +190,7 @@ public abstract class NanoHTTPD {
         try {
             Enumeration<URL> resources = NanoHTTPD.class.getClassLoader().getResources(resourceName);
             while (resources.hasMoreElements()) {
-                URL url = (URL) resources.nextElement();
+                URL url = resources.nextElement();
                 Properties properties = new Properties();
                 InputStream stream = null;
                 try {
