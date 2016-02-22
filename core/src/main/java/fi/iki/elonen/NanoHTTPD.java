@@ -808,35 +808,65 @@ public abstract class NanoHTTPD {
         }
 
         /**
-         * Decodes the Multipart Body data and put it into Key/Value pairs.
+         * Decodes an HTTP request body data that's been encoded with
+         * multipart/form-data and put it into key/value pairs. @see <a href=
+         * "http://stackoverflow.com/questions/4238809/example-of-multipart">an
+         * example taken from Stack Overflow</a>.
          * <p/>
-         * <p>
-         * See: http://www.ietf.org/rfc/rfc2388.txt
-         * </p>
+         * Suppose we have an HTML file with a form like this:
          * <p/>
-         * <p>
-         * MIME messages look like this: <code>
-         * MIME-Version: 1.0
-         * Content-Type: multipart/mixed; boundary=frontier
-         * 
-         * This is a message with multiple parts in MIME format.
-         * --frontier
-         *  Content-Type: text/plain
-         * 
-         *  This is the body of the message.
-         *  --frontier
-         *  Content-Type: application/octet-stream
-         *  Content-Transfer-Encoding: base64
-         * 
-         *  PGh0bWw+CiAgPGhlYWQ+CiAgPC9oZWFkPgogIDxib2R5PgogICAgPHA+VGhpcyBpcyB0aGUg
-         *  Ym9keSBvZiB0aGUgbWVzc2FnZS48L3A+CiAgPC9ib2R5Pgo8L2h0bWw+Cg==
-         *  --frontier--
+         * <code>
+         *     <form action="http://localhost:8000" method="post" enctype="multipart/form-data">
+         *          <p><input type="text" name="text" value="text default">
+         *          <p><input type="file" name="file1">
+         *          <p><input type="file" name="file2">
+         *          <p><button type="submit">Submit</button>
+         *      </form>
          * </code>
-         * <p>
-         * This method is given the boundary and is responsible for populating
-         * the parameters (those sections of the form that don't have headers)
-         * and the files (those sections with content-types.)
-         * </p>
+         * <p/>
+         * Firefox makes a submission like this:
+         * <p/>
+         * <code>
+         *     POST / HTTP/1.1
+         *     Host: localhost:8000
+         *     User-Agent: Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:29.0) Gecko/20100101 Firefox/29.0
+         *     Accept-Language: en-US,en;q=0.5
+         *     Accept-Encoding: gzip, deflate
+         *     Connection: keep-alive
+         *     Content-Type: multipart/form-data; boundary=---------------------------9051914041544843365972754266
+         *     Content-Length: 554
+         * 
+         *     -----------------------------9051914041544843365972754266
+         *     Content-Disposition: form-data; name="text"
+         * 
+         *     text default
+         *     -----------------------------9051914041544843365972754266
+         *     Content-Disposition: form-data; name="file1"; filename="a.txt"
+         *     Content-Type: text/plain
+         * 
+         *     Content of a.txt.
+         * 
+         *     -----------------------------9051914041544843365972754266
+         *     Content-Disposition: form-data; name="file2"; filename="a.html"
+         *     Content-Type: text/html
+         * 
+         *     <title>Content of a.html.</title>
+         * 
+         *     -----------------------------9051914041544843365972754266--
+         * </code>
+         * 
+         * @param contentType
+         *            the parent content type, including the boundary string
+         * @param fbuf
+         *            a byte buffer for the HTTP request
+         * @param parms
+         *            an output parameter giving the "parameters" for the form
+         *            data. The key is the name of the field, given in the
+         *            Content-Disposition header and the value is either the
+         *            contents or the path to the saved file.
+         * @param files
+         *            an output parameter giving the mapping of form data names
+         *            to saved paths.
          */
         private void decodeMultipartFormData(ContentType contentType, ByteBuffer fbuf, Map<String, String> parms, Map<String, String> files) throws ResponseException {
             int[] boundaryIdxs = getBoundaryPositions(fbuf, contentType);
