@@ -220,11 +220,11 @@ public abstract class NanoHTTPD {
      */
     public interface TempFile {
 
-        public void delete() throws Exception;
+        void delete() throws Exception;
 
-        public String getName();
+        String getName();
 
-        public OutputStream open() throws Exception;
+        OutputStream open() throws Exception;
     }
 
     /**
@@ -239,7 +239,7 @@ public abstract class NanoHTTPD {
 
         void clear();
 
-        public TempFile createTempFile(String filename_hint) throws Exception;
+        TempFile createTempFile(String filename_hint) throws Exception;
     }
 
     /**
@@ -247,7 +247,7 @@ public abstract class NanoHTTPD {
      */
     public interface TempFileManagerFactory {
 
-        public TempFileManager create();
+        TempFileManager create();
     }
 
     /**
@@ -255,7 +255,7 @@ public abstract class NanoHTTPD {
      */
     public interface ServerSocketFactory {
 
-        public ServerSocket create() throws IOException;
+        ServerSocket create() throws IOException;
 
     }
 
@@ -1484,7 +1484,7 @@ public abstract class NanoHTTPD {
             public String put(String key, String value) {
                 lowerCaseHeader.put(key == null ? key : key.toLowerCase(), value);
                 return super.put(key, value);
-            };
+            }
         };
 
         /**
@@ -1846,7 +1846,7 @@ public abstract class NanoHTTPD {
         try {
             Enumeration<URL> resources = NanoHTTPD.class.getClassLoader().getResources(resourceName);
             while (resources.hasMoreElements()) {
-                URL url = (URL) resources.nextElement();
+                URL url = resources.nextElement();
                 Properties properties = new Properties();
                 InputStream stream = null;
                 try {
@@ -1862,7 +1862,7 @@ public abstract class NanoHTTPD {
         } catch (IOException e) {
             LOG.log(Level.INFO, "no mime types available at " + resourceName);
         }
-    };
+    }
 
     /**
      * Creates an SSLSocketFactory for HTTPS based on a KeyStore and a set of
