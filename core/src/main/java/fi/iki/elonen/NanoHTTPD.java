@@ -287,7 +287,7 @@ public abstract class NanoHTTPD {
         return mime == null ? "application/octet-stream" : mime;
     }
 
-    private static void safeClose(Object closeable) {
+    private static final void safeClose(Object closeable) {
         try {
             if (closeable != null) {
                 if (closeable instanceof Closeable) {
@@ -411,6 +411,8 @@ public abstract class NanoHTTPD {
     public static Response newFixedLengthResponse(String msg) {
         return newFixedLengthResponse(Status.OK, NanoHTTPD.MIME_HTML, msg);
     }
+
+    ;
 
     /**
      * Forcibly closes all connections that are open.
@@ -728,11 +730,11 @@ public abstract class NanoHTTPD {
      */
     public interface TempFile {
 
-        void delete() throws Exception;
+        public void delete() throws Exception;
 
-        String getName();
+        public String getName();
 
-        OutputStream open() throws Exception;
+        public OutputStream open() throws Exception;
     }
 
     /**
@@ -747,7 +749,7 @@ public abstract class NanoHTTPD {
 
         void clear();
 
-        TempFile createTempFile(String filename_hint) throws Exception;
+        public TempFile createTempFile(String filename_hint) throws Exception;
     }
 
     /**
@@ -755,7 +757,7 @@ public abstract class NanoHTTPD {
      */
     public interface TempFileManagerFactory {
 
-        TempFileManager create();
+        public TempFileManager create();
     }
 
     /**
@@ -763,7 +765,7 @@ public abstract class NanoHTTPD {
      */
     public interface ServerSocketFactory {
 
-        ServerSocket create() throws IOException;
+        public ServerSocket create() throws IOException;
 
     }
 
@@ -956,7 +958,8 @@ public abstract class NanoHTTPD {
 
         @Override
         public ServerSocket create() throws IOException {
-            SSLServerSocket ss = (SSLServerSocket) this.sslServerSocketFactory.createServerSocket();
+            SSLServerSocket ss = null;
+            ss = (SSLServerSocket) this.sslServerSocketFactory.createServerSocket();
             if (this.sslProtocols != null) {
                 ss.setEnabledProtocols(this.sslProtocols);
             } else {
@@ -1063,9 +1066,11 @@ public abstract class NanoHTTPD {
         private final Map<String, String> header = new HashMap<String, String>() {
 
             public String put(String key, String value) {
-                lowerCaseHeader.put(key == null ? null : key.toLowerCase(), value);
+                lowerCaseHeader.put(key == null ? key : key.toLowerCase(), value);
                 return super.put(key, value);
             }
+
+            ;
         };
         /**
          * HTTP status code after processing, e.g. "200 OK", Status.OK
@@ -1612,8 +1617,8 @@ public abstract class NanoHTTPD {
             this.tempFileManager = tempFileManager;
             this.inputStream = new BufferedInputStream(inputStream, HTTPSession.BUFSIZE);
             this.outputStream = outputStream;
-            this.remoteIp = inetAddress.isLoopbackAddress() || inetAddress.isAnyLocalAddress() ? "127.0.0.1" : inetAddress.getHostAddress();
-            this.remoteHostname = inetAddress.isLoopbackAddress() || inetAddress.isAnyLocalAddress() ? "localhost" : inetAddress.getHostName();
+            this.remoteIp = inetAddress.isLoopbackAddress() || inetAddress.isAnyLocalAddress() ? "127.0.0.1" : inetAddress.getHostAddress().toString();
+            this.remoteHostname = inetAddress.isLoopbackAddress() || inetAddress.isAnyLocalAddress() ? "localhost" : inetAddress.getHostName().toString();
             this.headers = new HashMap<String, String>();
         }
 
