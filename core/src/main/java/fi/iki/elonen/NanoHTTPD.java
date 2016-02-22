@@ -756,52 +756,51 @@ public abstract class NanoHTTPD {
             try {
                 // Read the request line
                 String inLine = in.readLine();
-                if (inLine == null) {
-                    return;
-                }
-
-                StringTokenizer st = new StringTokenizer(inLine);
-                if (!st.hasMoreTokens()) {
-                    throw new ResponseException(Response.Status.BAD_REQUEST, "BAD REQUEST: Syntax error. Usage: GET /example/file.html");
-                }
-
-                pre.put("method", st.nextToken());
-
-                if (!st.hasMoreTokens()) {
-                    throw new ResponseException(Response.Status.BAD_REQUEST, "BAD REQUEST: Missing URI. Usage: GET /example/file.html");
-                }
-
-                String uri = st.nextToken();
-
-                // Decode parameters from the URI
-                int qmi = uri.indexOf('?');
-                if (qmi >= 0) {
-                    decodeParms(uri.substring(qmi + 1), parms);
-                    uri = decodePercent(uri.substring(0, qmi));
-                } else {
-                    uri = decodePercent(uri);
-                }
-
-                // If there's another token, its protocol version,
-                // followed by HTTP headers.
-                // NOTE: this now forces header names lower case since they are
-                // case insensitive and vary by client.
-                if (st.hasMoreTokens()) {
-                    protocolVersion = st.nextToken();
-                } else {
-                    protocolVersion = "HTTP/1.1";
-                    NanoHTTPD.LOG.log(Level.FINE, "no protocol version specified, strange. Assuming HTTP/1.1.");
-                }
-                String line = in.readLine();
-                while (line != null && !line.trim().isEmpty()) {
-                    int p = line.indexOf(':');
-                    if (p >= 0) {
-                        headers.put(line.substring(0, p).trim().toLowerCase(Locale.US), line.substring(p + 1).trim());
+                if (inLine != null) {
+                    StringTokenizer st = new StringTokenizer(inLine);
+                    if (!st.hasMoreTokens()) {
+                        throw new ResponseException(Response.Status.BAD_REQUEST, "BAD REQUEST: Syntax error. Usage: GET /example/file.html");
                     }
-                    line = in.readLine();
-                }
 
-                pre.put("uri", uri);
+                    pre.put("method", st.nextToken());
+
+                    if (!st.hasMoreTokens()) {
+                        throw new ResponseException(Response.Status.BAD_REQUEST, "BAD REQUEST: Missing URI. Usage: GET /example/file.html");
+                    }
+
+                    String uri = st.nextToken();
+
+                    // Decode parameters from the URI
+                    int qmi = uri.indexOf('?');
+                    if (qmi >= 0) {
+                        decodeParms(uri.substring(qmi + 1), parms);
+                        uri = decodePercent(uri.substring(0, qmi));
+                    } else {
+                        uri = decodePercent(uri);
+                    }
+
+                    // If there's another token, its protocol version,
+                    // followed by HTTP headers.
+                    // NOTE: this now forces header names lower case since they
+                    // are
+                    // case insensitive and vary by client.
+                    if (st.hasMoreTokens()) {
+                        protocolVersion = st.nextToken();
+                    } else {
+                        protocolVersion = "HTTP/1.1";
+                        NanoHTTPD.LOG.log(Level.FINE, "no protocol version specified, strange. Assuming HTTP/1.1.");
+                    }
+                    String line = in.readLine();
+                    while (line != null && !line.trim().isEmpty()) {
+                        int p = line.indexOf(':');
+                        if (p >= 0) {
+                            headers.put(line.substring(0, p).trim().toLowerCase(Locale.US), line.substring(p + 1).trim());
+                        }
+                        line = in.readLine();
+                    }
+
+                    pre.put("uri", uri);
+                }
             } catch (IOException ioe) {
                 throw new ResponseException(Response.Status.INTERNAL_ERROR, "SERVER INTERNAL ERROR: IOException: " + ioe.getMessage(), ioe);
             }
