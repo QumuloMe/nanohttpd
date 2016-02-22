@@ -869,7 +869,44 @@ public abstract class NanoHTTPD {
          *            to saved paths.
          */
         private void decodeMultipartFormData(ContentType contentType, ByteBuffer fbuf, Map<String, String> parms, Map<String, String> files) throws ResponseException {
-            int[] boundaryIdxs = getBoundaryPositions(fbuf, contentType);
+            byte[] boundary = contentType.getBoundary().getBytes();
+            int[] boundaryIdxs = new int[0];
+            if (fbuf.remaining() >= boundary.length) {
+
+                int search_window_pos = 0;
+                byte[] search_window = new byte[4 * 1024 + boundary.length];
+
+                int first_fill = (fbuf.remaining() < search_window.length) ? fbuf.remaining() : search_window.length;
+                fbuf.get(search_window, 0, first_fill);
+                int new_bytes = first_fill - boundary.length;
+
+                do {
+                    // Search the search_window
+                    for (int j = 0; j < new_bytes; j++) {
+                        for (int i = 0; i < boundary.length; i++) {
+                            if (search_window[j + i] != boundary[i])
+                                break;
+                            if (i == boundary.length - 1) {
+                                // Match found, add it to results
+                                int[] new_res = new int[boundaryIdxs.length + 1];
+                                System.arraycopy(boundaryIdxs, 0, new_res, 0, boundaryIdxs.length);
+                                new_res[boundaryIdxs.length] = search_window_pos + j;
+                                boundaryIdxs = new_res;
+                            }
+                        }
+                    }
+                    search_window_pos += new_bytes;
+
+                    // Copy the end of the buffer to the start
+                    System.arraycopy(search_window, search_window.length - boundary.length, search_window, 0, boundary.length);
+
+                    // Refill search_window
+                    new_bytes = search_window.length - boundary.length;
+                    new_bytes = (fbuf.remaining() < new_bytes) ? fbuf.remaining() : new_bytes;
+                    fbuf.get(search_window, boundary.length, new_bytes);
+                } while (new_bytes > 0);
+            }
+
             if (boundaryIdxs.length < 2) {
                 throw new ResponseException(Response.Status.BAD_REQUEST, "BAD REQUEST: Content type is multipart/form-data "
                         + "but it contains less than two boundary strings.");
@@ -1151,53 +1188,6 @@ public abstract class NanoHTTPD {
                 splitbyte++;
             }
             return 0;
-        }
-
-        /**
-         * Find the byte positions where multipart boundaries start. This reads
-         * a large block at a time and uses a temporary buffer to optimize
-         * (memory mapped) file access.
-         */
-        private int[] getBoundaryPositions(ByteBuffer b, ContentType contentType) {
-            byte[] boundary = contentType.getBoundary().getBytes();
-            int[] res = new int[0];
-            if (b.remaining() >= boundary.length) {
-
-                int search_window_pos = 0;
-                byte[] search_window = new byte[4 * 1024 + boundary.length];
-
-                int first_fill = (b.remaining() < search_window.length) ? b.remaining() : search_window.length;
-                b.get(search_window, 0, first_fill);
-                int new_bytes = first_fill - boundary.length;
-
-                do {
-                    // Search the search_window
-                    for (int j = 0; j < new_bytes; j++) {
-                        for (int i = 0; i < boundary.length; i++) {
-                            if (search_window[j + i] != boundary[i])
-                                break;
-                            if (i == boundary.length - 1) {
-                                // Match found, add it to results
-                                int[] new_res = new int[res.length + 1];
-                                System.arraycopy(res, 0, new_res, 0, res.length);
-                                new_res[res.length] = search_window_pos + j;
-                                res = new_res;
-                            }
-                        }
-                    }
-                    search_window_pos += new_bytes;
-
-                    // Copy the end of the buffer to the start
-                    System.arraycopy(search_window, search_window.length - boundary.length, search_window, 0, boundary.length);
-
-                    // Refill search_window
-                    new_bytes = search_window.length - boundary.length;
-                    new_bytes = (b.remaining() < new_bytes) ? b.remaining() : new_bytes;
-                    b.get(search_window, boundary.length, new_bytes);
-                } while (new_bytes > 0);
-            }
-
-            return res;
         }
 
         @Override
