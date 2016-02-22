@@ -940,9 +940,8 @@ public abstract class NanoHTTPD {
                     fbuf.position(partDataStart);
                     if (partContentType == null) {
                         // Read the part into a string
-                        byte[] data_bytes = new byte[partDataEnd - partDataStart];
-                        fbuf.get(data_bytes);
-                        parms.put(partName, new String(data_bytes, contentType.getEncoding()));
+                        String content = getParameterContentsFromBuffer(contentType, fbuf, partDataStart, partDataEnd);
+                        parms.put(partName, content);
                     } else {
                         // Read it into a file
                         String path = saveTmpFile(fbuf, partDataStart, partDataEnd - partDataStart, fileName);
@@ -961,6 +960,16 @@ public abstract class NanoHTTPD {
             } catch (ResponseException re) {
                 throw re;
             } catch (Exception e) {
+                throw new ResponseException(Response.Status.INTERNAL_ERROR, e.toString());
+            }
+        }
+
+        private String getParameterContentsFromBuffer(ContentType contentType, ByteBuffer fbuf, int partDataStart, int partDataEnd) throws ResponseException {
+            byte[] data_bytes = new byte[partDataEnd - partDataStart];
+            fbuf.get(data_bytes);
+            try {
+                return new String(data_bytes, contentType.getEncoding());
+            } catch (UnsupportedEncodingException e) {
                 throw new ResponseException(Response.Status.INTERNAL_ERROR, e.toString());
             }
         }
