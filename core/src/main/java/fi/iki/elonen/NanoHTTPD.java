@@ -886,6 +886,7 @@ public abstract class NanoHTTPD {
                         for (int i = 0; i < boundary.length; i++) {
                             if (search_window[j + i] != boundary[i])
                                 break;
+
                             if (i == boundary.length - 1) {
                                 // Match found, add it to results
                                 int[] new_res = new int[boundaryIdxs.length + 1];
