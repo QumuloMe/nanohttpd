@@ -810,8 +810,8 @@ public abstract class NanoHTTPD {
         /**
          * Decodes an HTTP request body data that's been encoded with
          * multipart/form-data and put it into key/value pairs. @see <a href=
-         * "http://stackoverflow.com/questions/4238809/example-of-multipart">an
-         * example taken from Stack Overflow</a>.
+         * "http://stackoverflow.com/questions/4238809/example-of-multipart-form-data"
+         * >an example taken from Stack Overflow</a>.
          * <p/>
          * Suppose we have an HTML file with a form like this:
          * <p/>
