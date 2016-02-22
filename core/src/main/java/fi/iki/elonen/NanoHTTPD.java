@@ -584,9 +584,9 @@ public abstract class NanoHTTPD {
      */
     public static class SecureServerSocketFactory implements ServerSocketFactory {
 
-        private SSLServerSocketFactory sslServerSocketFactory;
+        private final SSLServerSocketFactory sslServerSocketFactory;
 
-        private String[] sslProtocols;
+        private final String[] sslProtocols;
 
         public SecureServerSocketFactory(SSLServerSocketFactory sslServerSocketFactory, String[] sslProtocols) {
             this.sslServerSocketFactory = sslServerSocketFactory;
@@ -595,8 +595,7 @@ public abstract class NanoHTTPD {
 
         @Override
         public ServerSocket create() throws IOException {
-            SSLServerSocket ss = null;
-            ss = (SSLServerSocket) this.sslServerSocketFactory.createServerSocket();
+            SSLServerSocket ss = (SSLServerSocket) this.sslServerSocketFactory.createServerSocket();
             if (this.sslProtocols != null) {
                 ss.setEnabledProtocols(this.sslProtocols);
             } else {
@@ -745,8 +744,8 @@ public abstract class NanoHTTPD {
             this.tempFileManager = tempFileManager;
             this.inputStream = new BufferedInputStream(inputStream, HTTPSession.BUFSIZE);
             this.outputStream = outputStream;
-            this.remoteIp = inetAddress.isLoopbackAddress() || inetAddress.isAnyLocalAddress() ? "127.0.0.1" : inetAddress.getHostAddress().toString();
-            this.remoteHostname = inetAddress.isLoopbackAddress() || inetAddress.isAnyLocalAddress() ? "localhost" : inetAddress.getHostName().toString();
+            this.remoteIp = inetAddress.isLoopbackAddress() || inetAddress.isAnyLocalAddress() ? "127.0.0.1" : inetAddress.getHostAddress();
+            this.remoteHostname = inetAddress.isLoopbackAddress() || inetAddress.isAnyLocalAddress() ? "localhost" : inetAddress.getHostName();
             this.headers = new HashMap<String, String>();
         }
 
@@ -1472,7 +1471,7 @@ public abstract class NanoHTTPD {
          */
         private InputStream data;
 
-        private long contentLength;
+        private final long contentLength;
 
         /**
          * Headers for the HTTP response. Use addHeader() to add lines. The
@@ -1482,7 +1481,7 @@ public abstract class NanoHTTPD {
         private final Map<String, String> header = new HashMap<String, String>() {
 
             public String put(String key, String value) {
-                lowerCaseHeader.put(key == null ? key : key.toLowerCase(), value);
+                lowerCaseHeader.put(key == null ? null : key.toLowerCase(), value);
                 return super.put(key, value);
             }
         };
@@ -1893,7 +1892,7 @@ public abstract class NanoHTTPD {
      * 
      * @param loadedKeyStore
      *            a loaded KeyStore instance
-     * @param keyManagerFactory
+     * @param loadedKeyFactory
      *            a loaded KeyManagerFactory
      */
     public static SSLServerSocketFactory makeSSLSocketFactory(KeyStore loadedKeyStore, KeyManagerFactory loadedKeyFactory) throws IOException {
@@ -1946,7 +1945,7 @@ public abstract class NanoHTTPD {
         return mime == null ? "application/octet-stream" : mime;
     }
 
-    private static final void safeClose(Object closeable) {
+    private static void safeClose(Object closeable) {
         try {
             if (closeable != null) {
                 if (closeable instanceof Closeable) {
@@ -2013,7 +2012,7 @@ public abstract class NanoHTTPD {
      * of the ClientHandler.
      * 
      * @param finalAccept
-     *            the socket the cleint is connected to
+     *            the socket the client is connected to
      * @param inputStream
      *            the input stream
      * @return the client handler
@@ -2027,7 +2026,7 @@ public abstract class NanoHTTPD {
      * provide a subclass of the ServerRunnable.
      * 
      * @param timeout
-     *            the socet timeout to use.
+     *            the socket timeout to use.
      * @return the server runnable.
      */
     protected ServerRunnable createServerRunnable(final int timeout) {
