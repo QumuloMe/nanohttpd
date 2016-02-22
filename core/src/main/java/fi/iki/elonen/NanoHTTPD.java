@@ -1055,14 +1055,14 @@ public abstract class NanoHTTPD {
                 // Apache's default header limit is 8KB.
                 // Do NOT assume that a single read will get the entire header
                 // at once!
-                byte[] buf = new byte[HTTPSession.BUFSIZE];
+                byte[] headerBuffer = new byte[HTTPSession.BUFSIZE];
                 this.splitbyte = 0;
                 this.rlen = 0;
 
                 int read = -1;
                 this.inputStream.mark(HTTPSession.BUFSIZE);
                 try {
-                    read = this.inputStream.read(buf, 0, HTTPSession.BUFSIZE);
+                    read = this.inputStream.read(headerBuffer, 0, HTTPSession.BUFSIZE);
                 } catch (SSLException e) {
                     throw e;
                 } catch (IOException e) {
@@ -1078,11 +1078,11 @@ public abstract class NanoHTTPD {
                 }
                 while (read > 0) {
                     this.rlen += read;
-                    this.splitbyte = findHeaderEnd(buf, this.rlen);
+                    this.splitbyte = findHeaderEnd(headerBuffer, this.rlen);
                     if (this.splitbyte > 0) {
                         break;
                     }
-                    read = this.inputStream.read(buf, this.rlen, HTTPSession.BUFSIZE - this.rlen);
+                    read = this.inputStream.read(headerBuffer, this.rlen, HTTPSession.BUFSIZE - this.rlen);
                 }
 
                 if (this.splitbyte < this.rlen) {
@@ -1098,7 +1098,7 @@ public abstract class NanoHTTPD {
                 }
 
                 // Create a BufferedReader for parsing the header.
-                BufferedReader hin = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(buf, 0, this.rlen)));
+                BufferedReader hin = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(headerBuffer, 0, this.rlen)));
 
                 // Decode the header into parms and header java properties
                 Map<String, String> pre = new HashMap<String, String>();
