@@ -768,7 +768,6 @@ public abstract class NanoHTTPD {
                         line = in.readLine();
                     }
 
-
                 }
             } catch (IOException ioe) {
                 throw new ResponseException(Response.Status.INTERNAL_ERROR, "SERVER INTERNAL ERROR: IOException: " + ioe.getMessage(), ioe);
