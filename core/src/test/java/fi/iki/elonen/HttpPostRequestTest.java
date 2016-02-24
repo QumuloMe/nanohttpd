@@ -45,9 +45,36 @@ import java.util.UUID;
 
 import org.junit.Test;
 
+class HttpPostRequestBuilder {
+    public static final String CONTENT_LENGTH = "Content-Length: ";
+
+    /**
+     * contains common preparation steps for testing POST with Multipart Form
+     *
+     * @param fileName
+     *            Name of file to be uploaded
+     * @param fileContent
+     *            Content of file to be uploaded
+     * @return input String with POST request complete information including
+     *         header, length and content
+     */
+    public static String preparePostWithMultipartForm(String fileName, String fileContent) {
+        String divider = UUID.randomUUID().toString();
+        String header = "POST " + HttpServerTest.URI + " HTTP/1.1\nContent-Type: " + "multipart/form-data, boundary=" + divider + "\r\n";
+        String content =
+                "--" + divider + "\r\n" + "Content-Disposition: form-data; name=\"" + HttpPostRequestTest.FIELD + "\"; filename=\"" + fileName + "\"\r\n"
+                        + "Content-Type: image/jpeg\r\n" + "\r\n" + fileContent + "\r\n" + "--" + divider + "--\r\n";
+        int size = content.length() + header.length();
+        int contentLengthHeaderValueSize = String.valueOf(size).length();
+        int contentLength = size + contentLengthHeaderValueSize + HttpPostRequestBuilder.CONTENT_LENGTH.length();
+        String input = header + HttpPostRequestBuilder.CONTENT_LENGTH + (contentLength + 5) + "\r\n\r\n" + content;
+
+        return input;
+    }
+}
+
 public class HttpPostRequestTest extends HttpServerTest {
 
-    public static final String CONTENT_LENGTH = "Content-Length: ";
 
     public static final String FIELD = "caption";
 
@@ -61,35 +88,12 @@ public class HttpPostRequestTest extends HttpServerTest {
 
     public static final String VALUE_TEST_SIMPLE_RAW_DATA_WITH_AMPHASIS = "Test raw data & Result value";
 
-    /**
-     * contains common preparation steps for testing POST with Multipart Form
-     * 
-     * @param fileName
-     *            Name of file to be uploaded
-     * @param fileContent
-     *            Content of file to be uploaded
-     * @return input String with POST request complete information including
-     *         header, length and content
-     */
-    private String preparePostWithMultipartForm(String fileName, String fileContent) {
-        String divider = UUID.randomUUID().toString();
-        String header = "POST " + HttpServerTest.URI + " HTTP/1.1\nContent-Type: " + "multipart/form-data, boundary=" + divider + "\r\n";
-        String content =
-                "--" + divider + "\r\n" + "Content-Disposition: form-data; name=\"" + HttpPostRequestTest.FIELD + "\"; filename=\"" + fileName + "\"\r\n"
-                        + "Content-Type: image/jpeg\r\n" + "\r\n" + fileContent + "\r\n" + "--" + divider + "--\r\n";
-        int size = content.length() + header.length();
-        int contentLengthHeaderValueSize = String.valueOf(size).length();
-        int contentLength = size + contentLengthHeaderValueSize + HttpPostRequestTest.CONTENT_LENGTH.length();
-        String input = header + HttpPostRequestTest.CONTENT_LENGTH + (contentLength + 5) + "\r\n\r\n" + content;
-
-        return input;
-    }
 
     @Test
     public void testPostWithMultipartFormUpload() throws Exception {
         String filename = "GrandCanyon.txt";
         String fileContent = HttpPostRequestTest.VALUE;
-        String input = preparePostWithMultipartForm(filename, fileContent);
+        String input = HttpPostRequestBuilder.preparePostWithMultipartForm(filename, fileContent);
 
         invokeServer(input);
 
@@ -105,7 +109,7 @@ public class HttpPostRequestTest extends HttpServerTest {
     public void testPostWithMultipartFormUploadFilenameHasSpaces() throws Exception {
         String fileNameWithSpace = "Grand Canyon.txt";
         String fileContent = HttpPostRequestTest.VALUE;
-        String input = preparePostWithMultipartForm(fileNameWithSpace, fileContent);
+        String input = HttpPostRequestBuilder.preparePostWithMultipartForm(fileNameWithSpace, fileContent);
 
         invokeServer(input);
 
@@ -124,8 +128,8 @@ public class HttpPostRequestTest extends HttpServerTest {
                         + "\r\n" + "--" + divider + "--\r\n";
         int size = content.length() + header.length();
         int contentLengthHeaderValueSize = String.valueOf(size).length();
-        int contentLength = size + contentLengthHeaderValueSize + HttpPostRequestTest.CONTENT_LENGTH.length();
-        String input = header + HttpPostRequestTest.CONTENT_LENGTH + (contentLength + 4) + "\r\n\r\n" + content;
+        int contentLength = size + contentLengthHeaderValueSize + HttpPostRequestBuilder.CONTENT_LENGTH.length();
+        String input = header + HttpPostRequestBuilder.CONTENT_LENGTH + (contentLength + 4) + "\r\n\r\n" + content;
         invokeServer(input);
 
         assertEquals(2, this.testServer.parms.size());
@@ -143,8 +147,8 @@ public class HttpPostRequestTest extends HttpServerTest {
                         + "\r\n" + "--" + divider + "--\r\n";
         int size = content.length() + header.length();
         int contentLengthHeaderValueSize = String.valueOf(size).length();
-        int contentLength = size + contentLengthHeaderValueSize + HttpPostRequestTest.CONTENT_LENGTH.length();
-        String input = header + HttpPostRequestTest.CONTENT_LENGTH + (contentLength + 4) + "\r\n\r\n" + content;
+        int contentLength = size + contentLengthHeaderValueSize + HttpPostRequestBuilder.CONTENT_LENGTH.length();
+        String input = header + HttpPostRequestBuilder.CONTENT_LENGTH + (contentLength + 4) + "\r\n\r\n" + content;
         invokeServer(input);
 
         assertEquals(2, this.testServer.parms.size());
@@ -161,8 +165,8 @@ public class HttpPostRequestTest extends HttpServerTest {
                         + "--" + divider + "--\r\n";
         int size = content.length() + header.length();
         int contentLengthHeaderValueSize = String.valueOf(size).length();
-        int contentLength = size + contentLengthHeaderValueSize + HttpPostRequestTest.CONTENT_LENGTH.length();
-        String input = header + HttpPostRequestTest.CONTENT_LENGTH + (contentLength + 4) + "\r\n\r\n" + content;
+        int contentLength = size + contentLengthHeaderValueSize + HttpPostRequestBuilder.CONTENT_LENGTH.length();
+        String input = header + HttpPostRequestBuilder.CONTENT_LENGTH + (contentLength + 4) + "\r\n\r\n" + content;
         invokeServer(input);
 
         assertEquals(1, this.testServer.parms.size());
@@ -175,8 +179,8 @@ public class HttpPostRequestTest extends HttpServerTest {
         String content = HttpPostRequestTest.VALUE_TEST_SIMPLE_RAW_DATA_WITH_AMPHASIS + "\r\n";
         int size = content.length() + header.length();
         int contentLengthHeaderValueSize = String.valueOf(size).length();
-        int contentLength = size + contentLengthHeaderValueSize + HttpPostRequestTest.CONTENT_LENGTH.length();
-        String input = header + HttpPostRequestTest.CONTENT_LENGTH + (contentLength + 4) + "\r\n\r\n" + content;
+        int contentLength = size + contentLengthHeaderValueSize + HttpPostRequestBuilder.CONTENT_LENGTH.length();
+        String input = header + HttpPostRequestBuilder.CONTENT_LENGTH + (contentLength + 4) + "\r\n\r\n" + content;
         invokeServer(input);
         assertEquals(0, this.testServer.parms.size());
         assertEquals(1, this.testServer.files.size());
@@ -196,8 +200,8 @@ public class HttpPostRequestTest extends HttpServerTest {
                         + HttpPostRequestTest.FIELD2 + "\"\r\n" + "\r\n" + HttpPostRequestTest.VALUE2 + "\r\n" + "--" + divider + "--\r\n";
         int size = content.length() + header.length();
         int contentLengthHeaderValueSize = String.valueOf(size).length();
-        int contentLength = size + contentLengthHeaderValueSize + HttpPostRequestTest.CONTENT_LENGTH.length();
-        String input = header + HttpPostRequestTest.CONTENT_LENGTH + (contentLength + 4) + "\r\n\r\n" + content;
+        int contentLength = size + contentLengthHeaderValueSize + HttpPostRequestBuilder.CONTENT_LENGTH.length();
+        String input = header + HttpPostRequestBuilder.CONTENT_LENGTH + (contentLength + 4) + "\r\n\r\n" + content;
         invokeServer(input);
 
         assertEquals("Parameter count did not match.", 2, this.testServer.parms.size());
@@ -230,8 +234,8 @@ public class HttpPostRequestTest extends HttpServerTest {
                 + "--" + divider + "--\r\n";
         int size = content.length() + header.length();
         int contentLengthHeaderValueSize = String.valueOf(size).length();
-        int contentLength = size + contentLengthHeaderValueSize + HttpPostRequestTest.CONTENT_LENGTH.length();
-        String input = header + HttpPostRequestTest.CONTENT_LENGTH + (contentLength + 4) + "\r\n\r\n" + content;
+        int contentLength = size + contentLengthHeaderValueSize + HttpPostRequestBuilder.CONTENT_LENGTH.length();
+        String input = header + HttpPostRequestBuilder.CONTENT_LENGTH + (contentLength + 4) + "\r\n\r\n" + content;
         invokeServer(input);
 
         assertEquals("Parameter count did not match.", 2, this.testServer.parms.size());
@@ -259,7 +263,7 @@ public class HttpPostRequestTest extends HttpServerTest {
         String filename = "GrandCanyon.txt";
         String lineSeparator = "\n";
         String fileContent = HttpPostRequestTest.VALUE + lineSeparator + HttpPostRequestTest.VALUE + lineSeparator + HttpPostRequestTest.VALUE;
-        String input = preparePostWithMultipartForm(filename, fileContent);
+        String input = HttpPostRequestBuilder.preparePostWithMultipartForm(filename, fileContent);
 
         invokeServer(input);
 
