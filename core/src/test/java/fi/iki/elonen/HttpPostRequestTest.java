@@ -44,107 +44,107 @@ import java.util.UUID;
 
 import org.junit.Test;
 
-class HttpPostRequestBuilder {
-    private StringBuilder headers = new StringBuilder();
-    private StringBuilder body = new StringBuilder();
-    private String divider;
-    private boolean isMultipartFormData;
-
-    public HttpPostRequestBuilder() {
-        isMultipartFormData = false;
-        divider = UUID.randomUUID().toString();
-        headers.append("POST " + HttpServerTest.URI + " HTTP/1.1\n");
-    }
-
-    private static int digitsInNumber(int number) {
-        return 1 + (int)Math.log10(number);
-    }
-
-    private void setMultipartFormData() {
-        if (isMultipartFormData) {
-            return;
-        }
-
-        isMultipartFormData = true;
-        headers.append("Content-Type: " + "multipart/form-data, boundary=" + divider + "\r\n");
-    }
-
-    /**
-     * @return The finished request body
-     */
-    @Override
-    public String toString() {
-        StringBuilder request = new StringBuilder(headers);
-        request.append("Content-Length: ");
-
-        // Calculate what the Content-Length value ought to be; it's the header + body + extra finishing bits
-        int contentLength = request.length() + body.length() + "\r\n\r\n".length();
-        if (isMultipartFormData) {
-            contentLength += "\r\n----".length() + divider.length();
-        }
-
-        contentLength += digitsInNumber(contentLength + digitsInNumber(contentLength));
-        request.append(contentLength);
-        request.append("\r\n\r\n");
-        request.append(body);
-
-        if (isMultipartFormData) {
-            request.append("--" + divider + "--\r\n");
-        }
-
-        return request.toString();
-    }
-
-    private void addDivider() {
-        setMultipartFormData();
-        body.append("--" + divider + "\r\n");
-    }
-
-    /**
-     * Add a file to the multipart form data.
-     *
-     * @param fileName
-     *            Name of file to be uploaded
-     * @param fileContent
-     *            Content of file to be uploaded
-     */
-    public HttpPostRequestBuilder addFile(String parameterName, String fileName, String fileContent) {
-        addDivider();
-        body.append("Content-Disposition: form-data; name=\"" + parameterName + "\"; filename=\"" + fileName + "\"\r\n");
-        body.append("Content-Type: image/jpeg\r\n");
-        body.append("\r\n");
-        body.append(fileContent);
-        body.append("\r\n");
-
-        return this;
-    }
-
-    /**
-     * Add a parameter to the multipart form data.
-     * @param parameterName Name of the parameter to be added
-     * @param content Content of the parameter to be added
-     */
-    public HttpPostRequestBuilder addParameter(String parameterName, String content) {
-        addDivider();
-        body.append("Content-Disposition: form-data; name=\"" + parameterName + "\"\r\n");
-        body.append("\r\n");
-        body.append(content);
-        body.append("\r\n");
-
-        return this;
-    }
-
-    /**
-     * Adds some raw data to the POST request.
-     * @param content The content to add.
-     */
-    public HttpPostRequestBuilder addRawData(String content) {
-        body.append(content);
-        return this;
-    }
-}
-
 public class HttpPostRequestTest extends HttpServerTest {
+    class HttpPostRequestBuilder {
+        private StringBuilder headers = new StringBuilder();
+        private StringBuilder body = new StringBuilder();
+        private String divider;
+        private boolean isMultipartFormData;
+
+        public HttpPostRequestBuilder() {
+            isMultipartFormData = false;
+            divider = UUID.randomUUID().toString();
+            headers.append("POST " + HttpServerTest.URI + " HTTP/1.1\n");
+        }
+
+        private int digitsInNumber(int number) {
+            return 1 + (int)Math.log10(number);
+        }
+
+        private void setMultipartFormData() {
+            if (isMultipartFormData) {
+                return;
+            }
+
+            isMultipartFormData = true;
+            headers.append("Content-Type: " + "multipart/form-data, boundary=" + divider + "\r\n");
+        }
+
+        /**
+         * @return The finished request body
+         */
+        @Override
+        public String toString() {
+            StringBuilder request = new StringBuilder(headers);
+            request.append("Content-Length: ");
+
+            // Calculate what the Content-Length value ought to be; it's the header + body + extra finishing bits
+            int contentLength = request.length() + body.length() + "\r\n\r\n".length();
+            if (isMultipartFormData) {
+                contentLength += "\r\n----".length() + divider.length();
+            }
+
+            contentLength += digitsInNumber(contentLength + digitsInNumber(contentLength));
+            request.append(contentLength);
+            request.append("\r\n\r\n");
+            request.append(body);
+
+            if (isMultipartFormData) {
+                request.append("--" + divider + "--\r\n");
+            }
+
+            return request.toString();
+        }
+
+        private void addDivider() {
+            setMultipartFormData();
+            body.append("--" + divider + "\r\n");
+        }
+
+        /**
+         * Add a file to the multipart form data.
+         *
+         * @param fileName
+         *            Name of file to be uploaded
+         * @param fileContent
+         *            Content of file to be uploaded
+         */
+        public HttpPostRequestBuilder addFile(String parameterName, String fileName, String fileContent) {
+            addDivider();
+            body.append("Content-Disposition: form-data; name=\"" + parameterName + "\"; filename=\"" + fileName + "\"\r\n");
+            body.append("Content-Type: image/jpeg\r\n");
+            body.append("\r\n");
+            body.append(fileContent);
+            body.append("\r\n");
+
+            return this;
+        }
+
+        /**
+         * Add a parameter to the multipart form data.
+         * @param parameterName Name of the parameter to be added
+         * @param content Content of the parameter to be added
+         */
+        public HttpPostRequestBuilder addParameter(String parameterName, String content) {
+            addDivider();
+            body.append("Content-Disposition: form-data; name=\"" + parameterName + "\"\r\n");
+            body.append("\r\n");
+            body.append(content);
+            body.append("\r\n");
+
+            return this;
+        }
+
+        /**
+         * Adds some raw data to the POST request.
+         * @param content The content to add.
+         */
+        public HttpPostRequestBuilder addRawData(String content) {
+            body.append(content);
+            return this;
+        }
+    }
+
     public static final String FIELD = "caption";
 
     public static final String VALUE = "Summer vacation";
